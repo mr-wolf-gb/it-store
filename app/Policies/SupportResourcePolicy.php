@@ -20,6 +20,10 @@ class SupportResourcePolicy
      */
     public function view(?User $user, SupportResource $supportResource): bool
     {
+        if ($supportResource->status !== 'published') {
+            return $user?->can('resources.manage') ?? false;
+        }
+
         if ($supportResource->visibility === 'public') {
             return true;
         }
@@ -28,7 +32,9 @@ class SupportResourcePolicy
             return false;
         }
 
-        return $user->can('resources.view_private') || $user->can('resources.manage');
+        return $user->can('resources.view_private')
+            || $user->can('resources.download_private')
+            || $user->can('resources.manage');
     }
 
     /**
@@ -60,7 +66,7 @@ class SupportResourcePolicy
      */
     public function delete(User $user, SupportResource $supportResource): bool
     {
-        return $user->can('resources.manage');
+        return $user->can('resources.delete') || $user->can('resources.manage');
     }
 
     /**

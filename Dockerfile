@@ -46,6 +46,7 @@ RUN sed -ri -e "s!/var/www/html!${APACHE_DOCUMENT_ROOT}!g" /etc/apache2/sites-av
 COPY --from=vendor-builder /app /var/www/html
 COPY --from=frontend-builder /app/public/build /var/www/html/public/build
 COPY docker/entrypoint.sh /usr/local/bin/it-store-entrypoint
+COPY docker/php/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
 
 RUN mkdir -p storage bootstrap/cache database \
     && chown -R www-data:www-data storage bootstrap/cache database \

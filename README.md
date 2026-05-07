@@ -7,6 +7,11 @@ IT Store is a Laravel-based internal technical support library for publishing ap
 - Resource source types:
   - Local file upload (stored on Laravel local disk).
   - Internal or external link.
+- Multi-file attachments per resource (individual download/delete support).
+- Resource metadata: slug, status (draft/published/archived), version, changelog, category, tags, featured flag.
+- Taxonomy management for categories and tags.
+- Download counters for resources and individual files.
+- Locale support (`en`, `fr`) with browser detection + manual switch persisted in session/user profile.
 - Admin resource management (create/update/delete).
 - Dynamic role management (create/edit/delete roles).
 - Dynamic permission assignment to roles.
@@ -18,6 +23,9 @@ IT Store is a Laravel-based internal technical support library for publishing ap
 Default permissions seeded by `PermissionSeeder`:
 - `resources.view_private`
 - `resources.manage`
+- `resources.publish`
+- `resources.delete`
+- `resources.download_private`
 - `roles.manage`
 - `users.manage_roles`
 
@@ -44,6 +52,7 @@ Default admin user is created from `.env` values:
 3. Create SQLite file and run migrations + seeders:
    ```bash
    touch database/database.sqlite
+   php artisan storage:link
    php artisan migrate --seed
    ```
 4. Build assets and run:
@@ -51,6 +60,16 @@ Default admin user is created from `.env` values:
    npm run build
    php artisan serve
    ```
+
+### Local upload size configuration (important)
+If you use `php artisan serve`, PHP CLI limits apply. Increase them in your active `php.ini`:
+
+```ini
+upload_max_filesize = 100M
+post_max_size = 120M
+```
+
+Then restart the server.
 
 ## Production Docker deployment
 ### First-time setup
@@ -64,6 +83,40 @@ Default admin user is created from `.env` values:
    ```
 3. Open app:
    - `http://localhost:8080`
+
+### Deploy to a remote Docker host
+If your Docker machine is distant, deploy from your local workstation over SSH:
+
+1. Copy project to remote host:
+   ```bash
+   rsync -avz --delete ./ user@your-server:/opt/it-store/
+   ```
+2. SSH into remote host:
+   ```bash
+   ssh user@your-server
+   cd /opt/it-store
+   ```
+3. Create/update runtime env:
+   ```bash
+   cp .env.example .env
+   # edit .env with production values
+   ```
+4. Build and start:
+   ```bash
+   docker compose up -d --build
+   ```
+5. Verify health:
+   ```bash
+   docker compose ps
+   docker compose logs -f app
+   ```
+
+Suggested production checklist:
+- Set `APP_ENV=production`, `APP_DEBUG=false`
+- Set strong `APP_KEY`, `ADMIN_PASSWORD`, session/cookie domain values
+- Use HTTPS and reverse proxy/TLS termination in front of port `8080`
+- Keep `RUN_SEEDERS=false` after initial setup
+- Keep persistent volumes attached (`storage`, `database`, `bootstrap/cache`)
 
 ### Runtime behavior in container
 On startup, the container entrypoint will:
@@ -94,6 +147,8 @@ This keeps uploaded files, SQLite data, cache artifacts, and environment configu
 
 ## Notes
 - Uploaded files are stored locally (not external object storage).
+- Download routes are throttled.
+- Oversized multipart payloads are handled with a user-friendly error (HTTP 413 / form error).
 - Link resources accept:
   - Internal paths starting with `/`
   - External `http://` or `https://` URLs

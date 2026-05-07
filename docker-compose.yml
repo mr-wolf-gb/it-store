@@ -15,6 +15,46 @@ services:
       RUN_SEEDERS: "false"
     ports:
       - "8080:80"
+    healthcheck:
+      test: ["CMD", "php", "artisan", "about"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    volumes:
+      - ./.env:/var/www/html/.env
+      - it_store_storage:/var/www/html/storage
+      - it_store_database:/var/www/html/database
+      - it_store_bootstrap_cache:/var/www/html/bootstrap/cache
+  queue:
+    image: it-store:latest
+    container_name: it-store-queue
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      RUN_MIGRATIONS: "false"
+      RUN_SEEDERS: "false"
+    command: ["php", "artisan", "queue:work", "--sleep=3", "--tries=3", "--max-time=3600"]
+    volumes:
+      - ./.env:/var/www/html/.env
+      - it_store_storage:/var/www/html/storage
+      - it_store_database:/var/www/html/database
+      - it_store_bootstrap_cache:/var/www/html/bootstrap/cache
+  scheduler:
+    image: it-store:latest
+    container_name: it-store-scheduler
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      RUN_MIGRATIONS: "false"
+      RUN_SEEDERS: "false"
+    command: ["php", "artisan", "schedule:work"]
     volumes:
       - ./.env:/var/www/html/.env
       - it_store_storage:/var/www/html/storage

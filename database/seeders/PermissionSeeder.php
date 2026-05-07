@@ -19,6 +19,9 @@ class PermissionSeeder extends Seeder
         $permissions = [
             'resources.view_private',
             'resources.manage',
+            'resources.publish',
+            'resources.delete',
+            'resources.download_private',
             'roles.manage',
             'users.manage_roles',
         ];
