@@ -22,8 +22,9 @@ if [ ! -f database/database.sqlite ]; then
     touch database/database.sqlite
 fi
 
-chown -R www-data:www-data storage bootstrap/cache database
+chown -R www-data:www-data storage bootstrap/cache database .env
 chmod -R ug+rwx storage bootstrap/cache database
+chmod 644 .env
 
 if ! grep -q '^APP_KEY=base64:' .env; then
     php artisan key:generate --force --no-interaction
