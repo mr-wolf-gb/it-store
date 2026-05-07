@@ -22,7 +22,7 @@ services:
       retries: 3
       start_period: 40s
     volumes:
-      - it_store_env:/var/www/html/.env
+      - ./.env:/var/www/html/.env
       - it_store_storage:/var/www/html/storage
       - it_store_database:/var/www/html/database
       - it_store_bootstrap_cache:/var/www/html/bootstrap/cache
@@ -39,7 +39,7 @@ services:
       RUN_SEEDERS: "false"
     command: ["php", "artisan", "queue:work", "--sleep=3", "--tries=3", "--max-time=3600"]
     volumes:
-      - it_store_env:/var/www/html/.env
+      - ./.env:/var/www/html/.env
       - it_store_storage:/var/www/html/storage
       - it_store_database:/var/www/html/database
       - it_store_bootstrap_cache:/var/www/html/bootstrap/cache
@@ -59,7 +59,7 @@ services:
       RUN_SEEDERS: "false"
     command: ["php", "artisan", "schedule:work"]
     volumes:
-      - it_store_env:/var/www/html/.env
+      - ./.env:/var/www/html/.env
       - it_store_storage:/var/www/html/storage
       - it_store_database:/var/www/html/database
       - it_store_bootstrap_cache:/var/www/html/bootstrap/cache
@@ -68,7 +68,6 @@ services:
         condition: service_healthy
 
 volumes:
-  it_store_env:
   it_store_storage:
   it_store_database:
   it_store_bootstrap_cache:
