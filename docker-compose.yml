@@ -26,9 +26,6 @@ services:
       - it_store_storage:/var/www/html/storage
       - it_store_database:/var/www/html/database
       - it_store_bootstrap_cache:/var/www/html/bootstrap/cache
-    depends_on:
-      app:
-        condition: service_healthy
   queue:
     image: it-store:latest
     container_name: it-store-queue
