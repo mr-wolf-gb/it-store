@@ -1,58 +1,100 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# IT Store
+IT Store is a Laravel-based internal technical support library for publishing apps, scripts, and documents with role-based access control.
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## Features
+- Public resource catalog for anonymous users (apps/scripts/docs, descriptions, latest updates, download/open link).
+- Private resources visible only to authorized logged-in users.
+- Resource source types:
+  - Local file upload (stored on Laravel local disk).
+  - Internal or external link.
+- Admin resource management (create/update/delete).
+- Dynamic role management (create/edit/delete roles).
+- Dynamic permission assignment to roles.
+- User role assignment management.
+- SQLite database by default.
+- Production Docker setup with persistent volumes.
 
-## About Laravel
+## Access model and permissions
+Default permissions seeded by `PermissionSeeder`:
+- `resources.view_private`
+- `resources.manage`
+- `roles.manage`
+- `users.manage_roles`
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Default roles seeded:
+- `admin` (all permissions)
+- `member` (`resources.view_private`)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Default admin user is created from `.env` values:
+- `ADMIN_NAME`
+- `ADMIN_EMAIL`
+- `ADMIN_PASSWORD`
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Local development (without Docker)
+1. Install dependencies:
+   ```bash
+   composer install
+   npm install
+   ```
+2. Create environment file and app key:
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
+3. Create SQLite file and run migrations + seeders:
+   ```bash
+   touch database/database.sqlite
+   php artisan migrate --seed
+   ```
+4. Build assets and run:
+   ```bash
+   npm run build
+   php artisan serve
+   ```
 
-## Learning Laravel
+## Production Docker deployment
+### First-time setup
+1. Create `.env` from example and update values:
+   ```bash
+   cp .env.example .env
+   ```
+2. Build and start containers:
+   ```bash
+   docker compose up -d --build
+   ```
+3. Open app:
+   - `http://localhost:8080`
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Runtime behavior in container
+On startup, the container entrypoint will:
+- Ensure required writable directories exist.
+- Ensure `database/database.sqlite` exists.
+- Generate `APP_KEY` if missing.
+- Run migrations when `RUN_MIGRATIONS=true`.
+- Run seeders when `RUN_SEEDERS=true`.
+- Cache config and compiled views.
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Persistent data and config
+`docker-compose.yml` mounts persistent storage so updates do not erase data:
+- `it_store_storage` → `/var/www/html/storage`
+- `it_store_database` → `/var/www/html/database`
+- `it_store_bootstrap_cache` → `/var/www/html/bootstrap/cache`
+- `./.env` bind mount → `/var/www/html/.env`
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+This keeps uploaded files, SQLite data, cache artifacts, and environment configuration outside the ephemeral container layer.
 
-## Agentic Development
+## Safe update process (new image/container)
+1. Keep existing `.env` and Docker volumes.
+2. Rebuild and recreate:
+   ```bash
+   docker compose down
+   docker compose up -d --build
+   ```
+3. Data and config remain because they are mounted volumes/files, not container filesystem state.
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
-```
-
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Notes
+- Uploaded files are stored locally (not external object storage).
+- Link resources accept:
+  - Internal paths starting with `/`
+  - External `http://` or `https://` URLs
+- After first bootstrap, set `RUN_SEEDERS=false` in `.env` to avoid reseeding on every restart.
