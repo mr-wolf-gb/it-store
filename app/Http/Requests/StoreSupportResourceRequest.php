@@ -26,6 +26,8 @@ class StoreSupportResourceRequest extends FormRequest
     public function rules(): array
     {
         $maxFileKb = max((int) config('uploads.max_file_kb', 102400), 1);
+        $allowedExtensions = config('uploads.allowed_extensions', ['zip', '7z', 'rar', 'pdf', 'txt', 'md', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'msi', 'exe', 'bat', 'ps1', 'sh', 'json', 'xml', 'csv', 'log', 'iso']);
+        $mimesRule = 'mimes:'.implode(',', $allowedExtensions);
 
         return [
             'title' => ['required', 'string', 'max:255'],
@@ -42,7 +44,7 @@ class StoreSupportResourceRequest extends FormRequest
             'is_featured' => ['nullable', 'boolean'],
             'source_type' => ['required', Rule::in(SupportResource::SOURCE_OPTIONS)],
             'upload_files' => ['required_if:source_type,upload', 'array'],
-            'upload_files.*' => ['file', 'mimes:zip,7z,rar,pdf,txt,md,doc,docx,xls,xlsx,ppt,pptx,msi,exe,bat,ps1,sh,json,xml,csv,log', 'max:'.$maxFileKb],
+            'upload_files.*' => ['file', $mimesRule, 'max:'.$maxFileKb],
             'link_url' => ['exclude_unless:source_type,link', 'required', 'string', 'max:2048', new InternalOrExternalLink],
         ];
     }

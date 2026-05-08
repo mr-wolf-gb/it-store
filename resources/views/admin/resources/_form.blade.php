@@ -10,6 +10,7 @@
         ->all();
     $uploadFileErrors = array_merge($errors->get('upload_files'), $errors->get('upload_files.*'));
     $removeFileErrors = array_merge($errors->get('remove_file_ids'), $errors->get('remove_file_ids.*'));
+    $allowedExtensions = config('uploads.allowed_extensions', ['zip', '7z', 'rar', 'pdf', 'txt', 'md', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'msi', 'exe', 'bat', 'ps1', 'sh', 'json', 'xml', 'csv', 'log', 'iso']);
 @endphp
 
 <div class="space-y-5">
@@ -137,6 +138,9 @@
             multiple
             class="mt-1 block w-full text-sm border-gray-300 rounded-md"
         />
+        <p class="mt-1 text-xs text-gray-500">
+            {{ __('Allowed file types:') }} {{ implode(', ', $allowedExtensions) }}
+        </p>
         <x-input-error :messages="$uploadFileErrors" class="mt-2" />
 
         @if ($currentResource !== null)
