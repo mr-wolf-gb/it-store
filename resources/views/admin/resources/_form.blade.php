@@ -139,7 +139,7 @@
             class="mt-1 block w-full text-sm border-gray-300 rounded-md"
         />
         <p class="mt-1 text-xs text-gray-500">
-            {{ __('Allowed file types:') }} {{ implode(', ', $allowedExtensions) }}
+            {{ __('Allowed file extensions:') }} {{ implode(', ', $allowedExtensions) }}
         </p>
         <x-input-error :messages="$uploadFileErrors" class="mt-2" />
 
