@@ -4,6 +4,15 @@ set -eu
 
 cd /var/www/html
 
+# Check if we're running Apache or a CLI command
+IS_APACHE=false
+for arg in "$@"; do
+    if [ "$arg" = "apache2-foreground" ] || [ "$arg" = "apache2" ]; then
+        IS_APACHE=true
+        break
+    fi
+done
+
 # Verify PHP upload configuration is loaded
 echo "PHP Upload Configuration:"
 echo "  upload_max_filesize: $(php -r 'echo ini_get("upload_max_filesize");')"
@@ -11,15 +20,19 @@ echo "  post_max_size: $(php -r 'echo ini_get("post_max_size");')"
 echo "  max_file_uploads: $(php -r 'echo ini_get("max_file_uploads");')"
 echo "  memory_limit: $(php -r 'echo ini_get("memory_limit");')"
 echo "  max_execution_time: $(php -r 'echo ini_get("max_execution_time");')"
-echo ""
-echo "Apache Configuration:"
-echo "  LimitRequestBody: $(apache2ctl -S 2>/dev/null; grep -i 'LimitRequestBody' /etc/apache2/conf-enabled/*.conf 2>/dev/null || echo 'Not found in conf-enabled')"
 
-# Verify large-uploads.conf is loaded
-if [ -f /etc/apache2/conf-enabled/large-uploads.conf ]; then
-    echo "  large-uploads.conf: ENABLED"
-else
-    echo "  large-uploads.conf: NOT ENABLED"
+# Only show Apache config when running Apache
+if [ "$IS_APACHE" = true ]; then
+    echo ""
+    echo "Apache Configuration:"
+    echo "  LimitRequestBody: $(apache2ctl -S 2>/dev/null; grep -i 'LimitRequestBody' /etc/apache2/conf-enabled/*.conf 2>/dev/null || echo 'Not found in conf-enabled')"
+
+    # Verify large-uploads.conf is loaded
+    if [ -f /etc/apache2/conf-enabled/large-uploads.conf ]; then
+        echo "  large-uploads.conf: ENABLED"
+    else
+        echo "  large-uploads.conf: NOT ENABLED"
+    fi
 fi
 
 if [ ! -f .env ]; then
