@@ -4,6 +4,14 @@ set -eu
 
 cd /var/www/html
 
+# Verify PHP upload configuration is loaded
+echo "PHP Upload Configuration:"
+echo "  upload_max_filesize: $(php -r 'echo ini_get("upload_max_filesize");')"
+echo "  post_max_size: $(php -r 'echo ini_get("post_max_size");')"
+echo "  max_file_uploads: $(php -r 'echo ini_get("max_file_uploads");')"
+echo "  memory_limit: $(php -r 'echo ini_get("memory_limit");')"
+echo "  max_execution_time: $(php -r 'echo ini_get("max_execution_time");')"
+
 if [ ! -f .env ]; then
     cp .env.example .env
 fi

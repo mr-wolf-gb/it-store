@@ -46,11 +46,13 @@ RUN sed -ri -e "s!/var/www/html!${APACHE_DOCUMENT_ROOT}!g" /etc/apache2/sites-av
 COPY --from=vendor-builder /app /var/www/html
 COPY --from=frontend-builder /app/public/build /var/www/html/public/build
 COPY docker/entrypoint.sh /usr/local/bin/it-store-entrypoint
-COPY docker/php/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
+COPY docker/php/uploads.ini /usr/local/etc/php/conf.d/99-uploads.ini
 
 RUN mkdir -p storage bootstrap/cache database \
     && chown -R www-data:www-data storage bootstrap/cache database \
-    && chmod +x /usr/local/bin/it-store-entrypoint
+    && chmod +x /usr/local/bin/it-store-entrypoint \
+    && chown root:root /usr/local/etc/php/conf.d/99-uploads.ini \
+    && chmod 644 /usr/local/etc/php/conf.d/99-uploads.ini
 
 ENTRYPOINT ["it-store-entrypoint"]
 CMD ["apache2-foreground"]

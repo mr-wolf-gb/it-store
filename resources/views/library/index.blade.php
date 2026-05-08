@@ -27,7 +27,9 @@
                         </form>
                     @else
                         <a href="{{ route('login') }}" class="text-gray-700 hover:text-gray-900">{{ __('resources.login') }}</a>
-                        <a href="{{ route('register') }}" class="text-gray-700 hover:text-gray-900">{{ __('resources.register') }}</a>
+                        @if (config('settings.registration_enabled', true))
+                            <a href="{{ route('register') }}" class="text-gray-700 hover:text-gray-900">{{ __('resources.register') }}</a>
+                        @endif
                     @endauth
                 </div>
             </div>
