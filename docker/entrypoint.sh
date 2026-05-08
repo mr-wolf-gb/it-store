@@ -11,6 +11,16 @@ echo "  post_max_size: $(php -r 'echo ini_get("post_max_size");')"
 echo "  max_file_uploads: $(php -r 'echo ini_get("max_file_uploads");')"
 echo "  memory_limit: $(php -r 'echo ini_get("memory_limit");')"
 echo "  max_execution_time: $(php -r 'echo ini_get("max_execution_time");')"
+echo ""
+echo "Apache Configuration:"
+echo "  LimitRequestBody: $(apache2ctl -S 2>/dev/null; grep -i 'LimitRequestBody' /etc/apache2/conf-enabled/*.conf 2>/dev/null || echo 'Not found in conf-enabled')"
+
+# Verify large-uploads.conf is loaded
+if [ -f /etc/apache2/conf-enabled/large-uploads.conf ]; then
+    echo "  large-uploads.conf: ENABLED"
+else
+    echo "  large-uploads.conf: NOT ENABLED"
+fi
 
 if [ ! -f .env ]; then
     cp .env.example .env
