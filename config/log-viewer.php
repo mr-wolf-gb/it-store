@@ -103,8 +103,7 @@ return [
 
     'middleware' => [
         'web',
-        'auth',
-        'can:logs.view',
+        'auth'
     ],
 
     /*

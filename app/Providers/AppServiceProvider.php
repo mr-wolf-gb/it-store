@@ -27,11 +27,9 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(30)->by($request->user()?->id ?: $request->ip());
         });
 
-        if (app()->environment('production')) {
-            LogViewer::auth(function ($request) {
-                $user = $request->user();
-                return $user && $user->hasRole('admin');
-            });
-        }
+        LogViewer::auth(function ($request) {
+            // Check for the specific permission you created in your seeder
+            return $request->user()?->can('logs.view');
+        });
     }
 }
