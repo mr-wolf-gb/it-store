@@ -36,6 +36,11 @@
                             {{ __('resources.user_roles') }}
                         </x-nav-link>
                     @endcan
+                    @can('logs.view')
+                        <x-nav-link :href="route('log-viewer.index')" :active="request()->routeIs('log-viewer.*')">
+                            {{ __('Logs') }}
+                        </x-nav-link>
+                    @endcan
                 </div>
             </div>
 
@@ -117,6 +122,11 @@
             @can('users.manage_roles')
                 <x-responsive-nav-link :href="route('admin.user-roles.index')" :active="request()->routeIs('admin.user-roles.*')">
                     {{ __('resources.user_roles') }}
+                </x-responsive-nav-link>
+            @endcan
+            @can('logs.view')
+                <x-responsive-nav-link :href="route('log-viewer.index')" :active="request()->routeIs('log-viewer.*')">
+                    {{ __('Logs') }}
                 </x-responsive-nav-link>
             @endcan
         </div>

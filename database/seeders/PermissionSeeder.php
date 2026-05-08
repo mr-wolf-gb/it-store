@@ -24,6 +24,7 @@ class PermissionSeeder extends Seeder
             'resources.download_private',
             'roles.manage',
             'users.manage_roles',
+            'logs.view',
         ];
 
         foreach ($permissions as $permission) {

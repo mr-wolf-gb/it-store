@@ -77,6 +77,7 @@ Route::middleware('auth')->group(function (): void {
             Route::put('/{user}', [UserRoleController::class, 'update'])->name('update');
             Route::delete('/{user}', [UserRoleController::class, 'destroy'])->name('destroy');
         });
+
 });
 
 require __DIR__.'/auth.php';
