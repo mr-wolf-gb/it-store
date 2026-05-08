@@ -19,8 +19,11 @@ return [
     |--------------------------------------------------------------------------
     |
     | Comma-separated list of allowed file extensions.
+    | Set to "*" (or "ALL" in env) to allow all file types.
     | These extensions will be accepted when uploading files to resources.
     |
     */
-    'allowed_extensions' => explode(',', env('UPLOAD_ALLOWED_EXTENSIONS', 'zip,7z,rar,pdf,txt,md,doc,docx,xls,xlsx,ppt,pptx,msi,exe,bat,ps1,sh,json,xml,csv,log,iso,img,dmg,tar,gz,bz2,xz,sql,db,sqlite,apk,ipsw,firmware,rom,bin,nrg,cue,wim,swm,vhd,vhdx')),
+    'allowed_extensions' => env('UPLOAD_ALLOWED_EXTENSIONS') === 'ALL' || env('UPLOAD_ALLOWED_EXTENSIONS') === '*' || env('UPLOAD_ALLOWED_EXTENSIONS') === '' || env('UPLOAD_ALLOWED_EXTENSIONS') === null
+        ? null
+        : explode(',', env('UPLOAD_ALLOWED_EXTENSIONS', 'zip,7z,rar,pdf,txt,md,doc,docx,xls,xlsx,ppt,pptx,msi,exe,bat,ps1,sh,json,xml,csv,log,iso,img,dmg,tar,gz,bz2,xz,sql,db,sqlite,apk,ipsw,firmware,rom,bin,nrg,cue,wim,swm,vhd,vhdx')),
 ];

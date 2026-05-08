@@ -26,9 +26,14 @@ class UpdateSupportResourceRequest extends FormRequest
     public function rules(): array
     {
         $maxFileKb = max((int) config('uploads.max_file_kb', 102400), 1);
-        $allowedExtensions = config('uploads.allowed_extensions', ['zip', '7z', 'rar', 'pdf', 'txt', 'md', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'msi', 'exe', 'bat', 'ps1', 'sh', 'json', 'xml', 'csv', 'log', 'iso']);
-        $mimesRule = 'mimes:'.implode(',', $allowedExtensions);
-        $extensionsRule = 'extensions:'.implode(',', $allowedExtensions);
+        $allowedExtensions = config('uploads.allowed_extensions');
+
+        $fileRules = ['file'];
+        if ($allowedExtensions !== null) {
+            $fileRules[] = 'mimes:'.implode(',', $allowedExtensions);
+            $fileRules[] = 'extensions:'.implode(',', $allowedExtensions);
+        }
+        $fileRules[] = 'max:'.$maxFileKb;
 
         return [
             'title' => ['required', 'string', 'max:255'],
@@ -45,7 +50,7 @@ class UpdateSupportResourceRequest extends FormRequest
             'is_featured' => ['nullable', 'boolean'],
             'source_type' => ['required', Rule::in(SupportResource::SOURCE_OPTIONS)],
             'upload_files' => ['nullable', 'array'],
-            'upload_files.*' => ['file', $mimesRule, $extensionsRule, 'max:'.$maxFileKb],
+            'upload_files.*' => $fileRules,
             'remove_file_ids' => ['nullable', 'array'],
             'remove_file_ids.*' => ['integer', Rule::exists('support_resource_files', 'id')],
             'link_url' => ['exclude_unless:source_type,link', 'required', 'string', 'max:2048', new InternalOrExternalLink],
