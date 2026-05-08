@@ -118,6 +118,60 @@ Suggested production checklist:
 - Keep `RUN_SEEDERS=false` after initial setup
 - Keep persistent volumes attached (`storage`, `database`, `bootstrap/cache`)
 
+### Nginx Reverse Proxy Configuration
+
+If using nginx as a reverse proxy in front of the app, you must configure it to allow large file uploads (default is 1MB).
+
+**nginx.conf or site configuration:**
+
+```nginx
+http {
+    # Global upload size limit (must be >= UPLOAD_MAX_FILE_KB in .env)
+    client_max_body_size 10G;
+    
+    # Timeout settings for large uploads (slow connections)
+    proxy_read_timeout 600s;
+    proxy_connect_timeout 600s;
+    proxy_send_timeout 600s;
+    
+    server {
+        listen 80;
+        server_name it-store.example.com;
+        
+        location / {
+            proxy_pass http://it-store-app:8080;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            
+            # Large upload settings (match these to .env UPLOAD_MAX_FILE_KB)
+            client_max_body_size 10G;
+            
+            # Stream uploads without buffering (reduces memory usage)
+            proxy_request_buffering off;
+            proxy_buffering off;
+        }
+    }
+}
+```
+
+**Or In your nginx.conf or site config:**
+```nginx
+client_max_body_size 10G;  # Must be >= your max upload size
+proxy_read_timeout 600s;   # For slow uploads
+proxy_connect_timeout 600s;
+proxy_send_timeout 600s;
+```
+
+**Important:** The `client_max_body_size` in nginx must be equal to or larger than your app's `UPLOAD_MAX_FILE_KB` setting in `.env`.
+
+After updating nginx configuration:
+```bash
+sudo nginx -t          # Test configuration
+sudo nginx -s reload   # Reload without downtime
+```
+
 ### Runtime behavior in container
 On startup, the container entrypoint will:
 - Ensure required writable directories exist.
